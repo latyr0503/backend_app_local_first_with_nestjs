@@ -8,8 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User } from '../entities/user.entity';
-import { RegisterDto, LoginDto } from '../dto/auth.dto';
+import { User, UserRole } from '../entities/user.entity';
+import { RegisterDto, LoginDto, UpdateUserDto } from '../dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +20,8 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
-    const { email, username, password } = registerDto;
+    const { email, username, password, phone_number, adresse, sexe, role } =
+      registerDto;
 
     // Vérifier si l'utilisateur existe déjà
     const existingUser = await this.userRepository.findOne({
@@ -35,12 +36,16 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Créer l'utilisateur
+    // Créer l'utilisateur avec les nouveaux champs
     const user = this.userRepository.create({
       email,
       username,
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       password: hashedPassword,
+      phone_number,
+      adresse,
+      sexe,
+      role: role || UserRole.AGENT, // Rôle par défaut si non spécifié
     });
 
     const savedUser = await this.userRepository.save(user);
@@ -53,6 +58,11 @@ export class AuthService {
         id: savedUser.id,
         email: savedUser.email,
         username: savedUser.username,
+        phone_number: savedUser.phone_number,
+        adresse: savedUser.adresse,
+        sexe: savedUser.sexe,
+        role: savedUser.role,
+        createdAt: savedUser.createdAt,
       },
       ...tokens,
     };
@@ -85,6 +95,11 @@ export class AuthService {
         id: user.id,
         email: user.email,
         username: user.username,
+        phone_number: user.phone_number,
+        adresse: user.adresse,
+        sexe: user.sexe,
+        role: user.role,
+        createdAt: user.createdAt,
       },
       ...tokens,
     };
@@ -112,6 +127,11 @@ export class AuthService {
           id: user.id,
           email: user.email,
           username: user.username,
+          phone_number: user.phone_number,
+          adresse: user.adresse,
+          sexe: user.sexe,
+          role: user.role,
+          createdAt: user.createdAt,
         },
         ...tokens,
       };
@@ -144,5 +164,43 @@ export class AuthService {
     return this.userRepository.findOne({
       where: { id: userId },
     });
+  }
+
+  async updateProfile(userId: string, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur non trouvé');
+    }
+
+    // Vérifier si le nouveau username est déjà utilisé par un autre utilisateur
+    if (updateUserDto.username && updateUserDto.username !== user.username) {
+      const existingUser = await this.userRepository.findOne({
+        where: { username: updateUserDto.username },
+      });
+
+      if (existingUser) {
+        throw new ConflictException("Ce nom d'utilisateur est déjà utilisé");
+      }
+    }
+
+    // Mettre à jour les champs fournis
+    Object.assign(user, updateUserDto);
+
+    const updatedUser = await this.userRepository.save(user);
+
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      username: updatedUser.username,
+      phone_number: updatedUser.phone_number,
+      adresse: updatedUser.adresse,
+      sexe: updatedUser.sexe,
+      role: updatedUser.role,
+      createdAt: updatedUser.createdAt,
+      updatedAt: updatedUser.updatedAt,
+    };
   }
 }

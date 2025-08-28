@@ -1,6 +1,27 @@
-# 🍉 Backend WatermelonDB - API Posts et Commentaires
+# 📌 API Heber Sénégal – Collecte et Gestion des Données Agricoles
 
-Backend NestJS complet pour une application de posts et commentaires avec synchronisation WatermelonDB.
+Cette API permet la digitalisation et la gestion des activités agricoles au sein de la plateforme Heber Sénégal.
+Elle fournit des fonctionnalités adaptées aux différents profils utilisateurs :
+
+Agents de terrain : saisie des données agricoles sur le terrain, même en mode hors-ligne, avec synchronisation automatique.
+
+Superviseurs : suivi et gestion des agents de terrain, regroupement des équipes, validation et contrôle des données collectées.
+
+Administrateurs : gestion globale des utilisateurs, des exploitations agricoles et des rapports consolidés.
+
+Producteurs : consultation et mise à jour de leurs informations agricoles.
+
+L’API est conçue pour supporter un fonctionnement offline-first, avec synchronisation côté backend dès que la connexion est disponible.
+
+Elle expose des endpoints sécurisés pour :
+
+la gestion des utilisateurs et rôles
+
+la collecte et consultation des données agricoles
+
+le suivi des activités sur le terrain
+
+la génération de rapports et statistiques
 
 ## 🚀 Fonctionnalités
 
